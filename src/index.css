@@ -17,3 +17,11 @@
 
   --text-xxs: 0.635rem;
 }
+
+select {
+  appearance: None;
+  background-image: url("./assets/chevron-down.svg");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem top 50%;
+  background-size: 1.25rem auto;
+}
