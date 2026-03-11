@@ -18,6 +18,7 @@ export function Refund() {
   function onSubmit(e: React.SubmitEvent) {
     e.preventDefault();
 
+    setIsLoading(true)
     navigate("/confirm", { state: { fromSubmit: true } });
   }
 
