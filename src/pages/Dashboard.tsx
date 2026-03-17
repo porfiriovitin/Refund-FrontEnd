@@ -6,6 +6,7 @@ import { CATEGORIES } from "../utils/categories"
 import { Input } from "../components/Input"
 import { Button } from "../components/button"
 import { RefundItem } from "../components/RefundItem"
+import type { RefundItemProps } from "../components/RefundItem"
 import { Pagination } from "../components/Pagination"
 
 const REFUND_EXAMPLE = {
@@ -20,6 +21,7 @@ export function Dashboard() {
     const [name, setName] = useState("")
     const [page, setPage] = useState(1)
     const [totalPages, setTotalPages] = useState(10)
+    const [refunds, setRefunds] = useState<RefundItemProps[]> ([REFUND_EXAMPLE])
 
     function fetchRefunds(e: React.SubmitEvent) {
         e.preventDefault()
@@ -52,8 +54,11 @@ export function Dashboard() {
                 <Button variant="icon"><img src={searchSvg} alt="Pesquisar" className="w-5" /></Button>
             </form>
 
-            <div className="my-6 flex flex-col gap-4 max-h-85.5 overflow-y-scroll p-3">
-                <RefundItem data={REFUND_EXAMPLE} />
+            <div className="my-5 flex flex-col gap-4 max-h-85.5 overflow-y-scroll p-3">
+                {
+                    refunds.map((item) => <RefundItem key={item.id} data={REFUND_EXAMPLE} href={`/refund/${item.id}`}/> )
+                }
+                
             </div>
 
             <Pagination current={page} total={totalPages} onNext={() => handlePagination("next")} onPrevious={()=> handlePagination("previous")} />
