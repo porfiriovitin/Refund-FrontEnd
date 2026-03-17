@@ -1,10 +1,11 @@
-import { data } from "react-router"
+import { formatCurrency } from "../utils/formatCurrency"
+
 
 export type RefundItemProps = {
     id: string
     name: string
     category: string
-    amount: string
+    amount: number
     categoryImg: string
 }
 
@@ -23,7 +24,7 @@ export function RefundItem({data, ...rest}:Props){
             </div>
 
             <span className="text-md text-gray-100 font-semibold">
-                <small className="font-normal text-gray-200">R$ {data.amount}</small>
+                <small className="font-semibold text-gray-100 text-sm">{formatCurrency(data.amount)}</small>
             </span>
         </a>
     )
