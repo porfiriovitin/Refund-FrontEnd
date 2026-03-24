@@ -26,8 +26,6 @@ export function SignIn(){
 
             console.log(response.data)
 
-
-
         }catch(error){
             console.log(error)
 
