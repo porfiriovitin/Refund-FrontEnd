@@ -1,6 +1,22 @@
 import { Input } from "../components/Input"
 import { Button } from "../components/button"
 import { useState } from "react"
+import { useNavigate } from "react-router"
+import { AxiosError } from "axios"
+
+import { z, ZodError} from "zod"
+
+import { api } from "../services/api"
+
+const signUpSchema = z.object({
+    name: z.string().min(1, {message:"Informe o nome"}),
+    email: z.email({message:"E-mail inválido"}).min(1, {message:"Informe o email"}),
+    password: z.string().min(6, {message:"A senha deve conter no mínimo 6 caracteres"}),
+    passwordConfirm: z.string().min(6, {message:"Confirme sua senha"})
+}).refine((data) => data.password === data.passwordConfirm, {
+    message: "As senhas não coincidem",
+    path: ["passwordConfirm"]
+})
 
 export function SignUp(){
     const [name, setName] = useState("")
@@ -9,11 +25,43 @@ export function SignUp(){
     const [passwordConfirm, setPasswordConfirm] = useState("")
     const [isLoading, setIsLoading] = useState(false)
 
+    const navigate = useNavigate()
 
-    function onSubmit(e: React.FormEvent){
+    async function onSubmit(e: React.SubmitEvent){
         e.preventDefault()
-        console.log(name, email, password, passwordConfirm)
-        setIsLoading(true)
+        
+        try{
+            setIsLoading(true)
+
+            const data = signUpSchema.parse({
+                name,
+                email,
+                password,
+                passwordConfirm
+            })
+
+            await api.post("/users", data)
+
+            if(confirm("Cadastrado com sucesso. Ir para tela de login?")){
+                navigate("/")
+            }
+
+        }catch(error){
+            if(error instanceof ZodError){
+                return alert(error.issues[0].message)
+            }
+
+            if(error instanceof AxiosError){
+                return alert(error.response?.data.message)
+            }
+
+            console.log(error)
+
+            alert("Ocorreu um erro inesperado")
+        }
+        finally{
+            setIsLoading(false)
+        }
     }
 
     return(
