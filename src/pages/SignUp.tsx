@@ -3,9 +3,7 @@ import { Button } from "../components/button"
 import { useState } from "react"
 import { useNavigate } from "react-router"
 import { AxiosError } from "axios"
-
 import { z, ZodError} from "zod"
-
 import { api } from "../services/api"
 
 const signUpSchema = z.object({

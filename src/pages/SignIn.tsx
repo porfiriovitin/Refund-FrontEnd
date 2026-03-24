@@ -1,24 +1,57 @@
 import { Input } from "../components/Input"
 import { Button } from "../components/button"
-import { useState } from "react"
+import { useActionState } from "react"
+import { z, ZodError} from "zod"
+import { api } from "../services/api"
+
+import { useNavigate } from "react-router"
+import { AxiosError } from "axios"
+
+const signInSchema = z.object({
+    email: z.email({message:"E-mail inválido"}).min(1, {message:"Informe o email"}),
+    password: z.string().min(6, {message:"A senha deve conter no mínimo 6 caracteres"})
+})
 
 export function SignIn(){
-    const [email, setEmail] = useState("")
-    const[password, setPassword] = useState("")
-    const [isLoading, setIsLoading] = useState(false)
+    const [state, formAction, isLoading] = useActionState(signIn, null)
+
+    async function signIn(_:any, formData: FormData){
+        try{
+            const data = signInSchema.parse({
+                email: formData.get("email"),
+                password: formData.get("password")
+            })
+    
+            const response = await api.post("/sessions", data)
+
+            console.log(response.data)
 
 
-    function onSubmit(e: React.FormEvent){
-        e.preventDefault()
-        console.log(email, password)
-        setIsLoading(true)
+
+        }catch(error){
+            console.log(error)
+
+            if(error instanceof ZodError){
+                return { message:error.issues[0].message }
+            }
+
+            if (error instanceof AxiosError){
+                return {message: error.response?.data.message}
+            }
+
+            return { message: "Não foi possível entrar" }
+        }
     }
 
     return(
-        <form onSubmit={onSubmit} className="w-full flex flex-col gap-6">
-            <Input required name="email" legend="E-mail" type="email" placeholder="seu@email.com" onChange={(e)=>{setEmail(e.target.value)}}/>
+        <form action={formAction} className="w-full flex flex-col gap-6">
+            <Input required name="email" legend="E-mail" type="email" placeholder="seu@email.com" />
 
-            <Input required name="password" legend="Senha" type="password" placeholder="123456" onChange={(e)=>{setPassword(e.target.value)}}/>
+            <Input required name="password" legend="Senha" type="password" placeholder="123456" />
+
+            <p className="text-sm text-red-600 text-center my-4 font-medium">
+                {state?.message}
+            </p>
 
             <div className="flex justify-center">
                 <Button type="submit" isLoading={isLoading}>Entrar</Button>
