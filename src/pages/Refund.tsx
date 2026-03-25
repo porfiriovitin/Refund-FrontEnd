@@ -10,8 +10,8 @@ import { CATEGORIES, CATEGORIES_KEYS } from "../utils/categories";
 import fileSvg from "../assets/file.svg"
 
 export function Refund() {
-  const [name, setName] = useState("Teste");
-  const [amount, setAmount] = useState("35");
+  const [name, setName] = useState<string>(""); 
+  const [amount, setAmount] = useState<string>("");
   const [category, setCategory] = useState("transport");
   const [isLoading, setIsLoading] = useState(false);
   const [fileName, setFileName] = useState<File | null>(null);

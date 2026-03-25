@@ -3,8 +3,8 @@ import { Button } from "../components/button"
 import { useActionState } from "react"
 import { z, ZodError} from "zod"
 import { api } from "../services/api"
+import { useAuth } from "../hooks/useAuth"
 
-import { useNavigate } from "react-router"
 import { AxiosError } from "axios"
 
 const signInSchema = z.object({
@@ -15,16 +15,18 @@ const signInSchema = z.object({
 export function SignIn(){
     const [state, formAction, isLoading] = useActionState(signIn, null)
 
+    const auth = useAuth()
+
     async function signIn(_:any, formData: FormData){
         try{
             const data = signInSchema.parse({
-                email: formData.get("email"),
+                email: formData.get("email")?.toString().toLowerCase(),
                 password: formData.get("password")
             })
     
             const response = await api.post("/sessions", data)
 
-            console.log(response.data)
+            auth.save(response.data)
 
         }catch(error){
             console.log(error)
