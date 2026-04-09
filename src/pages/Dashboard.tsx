@@ -11,16 +11,9 @@ import { Button } from "../components/button"
 import { RefundItem } from "../components/RefundItem"
 import type { RefundItemProps } from "../components/RefundItem"
 import { Pagination } from "../components/Pagination"
+import type { RefundsPaginationAPIResponse } from "../dtos/refunds"
 
-const REFUND_EXAMPLE = {
-    id: "123",
-    name: "Victor",
-    category: "Alimentação",
-    amount: 60.00,
-    categoryImg: CATEGORIES["food"].icon
-}
-
-const PER_PAGE = 5
+const PER_PAGE = 2
 
 export function Dashboard() {
     const [name, setName] = useState("")
@@ -30,20 +23,16 @@ export function Dashboard() {
 
     async function fetchRefunds() {
         try {
-            const response = await api.get(`/refunds?name=${name.trim()}&page=${page}&per_page=${PER_PAGE}`)
-
-            const formattedRefunds = response.data.refunds.map((refund: any) => {
-                const key = refund.category as keyof typeof CATEGORIES
-                const categoryData = CATEGORIES[key] ?? CATEGORIES.others
-
-                return {
-                ...refund,
-                category: categoryData.name,
-                categoryImg: categoryData.icon,
-                }
-            })
-
-            setRefunds(formattedRefunds)
+            const response = await api.get<RefundsPaginationAPIResponse>(`/refunds?name=${name.trim()}&page=${page}&perPage=${PER_PAGE}`)
+            
+            setRefunds(
+                response.data.refunds.map((refund)=> ({
+                    ...refund,
+                    name:refund.user.name,
+                    category: CATEGORIES[refund.category as keyof typeof CATEGORIES].name,
+                    categoryImg: CATEGORIES[refund.category as keyof typeof CATEGORIES].icon
+                }))
+            )
             setTotalPages(response.data.pagination.totalPages)
 
             console.log(response.data)
@@ -56,6 +45,11 @@ export function Dashboard() {
 
             alert("Ocorreu um erro ao buscar as solicitações. Por favor, tente novamente mais tarde.")
         }
+    }
+
+    function onSubmit(e: React.FormEvent) {
+        e.preventDefault()
+        fetchRefunds()
     }
 
     function handlePagination(action: "next" | "previous") {
@@ -81,7 +75,7 @@ export function Dashboard() {
         <div className="bg-gray-500 rounded-xl p-10 md:min-w-3xl w-5xl mx-auto">
             <h1 className="text-gray-100 font-bold text-xl flex-1">Solicitações:</h1>
 
-            <form onSubmit={fetchRefunds} className="flex flex-1 items-center justify-between pb-6 border-b border-gray-400 md:flex-row gap-2 mt-6">
+            <form onSubmit={onSubmit} className="flex flex-1 items-center justify-between pb-6 border-b border-gray-400 md:flex-row gap-2 mt-6">
                 <Input placeholder="Pesquisar pelo nome" onChange={(e) => setName(e.target.value)} />
 
                 <Button variant="icon"><img src={searchSvg} alt="Pesquisar" className="w-5" /></Button>

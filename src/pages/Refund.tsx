@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { ZodError, z } from "zod";
+import { ZodError, set, z } from "zod";
 import fileSvg from "../assets/file.svg";
 import { CATEGORIES, CATEGORIES_KEYS } from "../utils/categories";
 import { AxiosError } from "axios";
@@ -10,6 +10,8 @@ import { Input } from "../components/Input";
 import { Select } from "../components/Select";
 import { Upload } from "../components/Upload";
 import { Button } from "../components/button";
+import type { RefundAPIResponse } from "../dtos/refunds";
+import { formatCurrency } from "../utils/formatCurrency";
 
 const refundSchema = z.object({
   name: z
@@ -27,6 +29,7 @@ export function Refund() {
   const [category, setCategory] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const params = useParams<{ id: string }>();
@@ -80,6 +83,34 @@ export function Refund() {
     }
   }
 
+  async function fetchRefund(id: string) {
+    try{
+
+      const {data} = await api.get<RefundAPIResponse>(`/refunds/${id}`)
+
+      setName(data.name)
+      setAmount(formatCurrency(data.amount))
+      setCategory(data.category)
+      setFileUrl(data.filename ? URL.createObjectURL(new File([], data.filename)) : null)
+
+    }catch(error){
+      console.log(error)
+      
+      if (error instanceof AxiosError) {
+        return alert(
+          error.response?.data.message || "Ocorreu um erro na solicitação",
+        );
+      }
+
+    }
+  }
+
+  useEffect(() => {
+    if(params.id){
+      fetchRefund(params.id)
+    }
+  }, [params.id])
+
   return (
     <form
       className="bg-gray-500 w-4/5 md:w-1/2 rounded-xl flex flex-col p-10 gap-6 lg:min-w-lg mx-auto"
@@ -127,9 +158,9 @@ export function Refund() {
         />
       </div>
 
-      {params.id ? (
+      {params.id && fileUrl? (
         <a
-          href="https://github.com/"
+          href={`http://localhost:3333/uploads/${fileUrl.split("/").pop()}`} // Extrai o nome do arquivo da URL
           target="blank"
           className="text-sm text-green-100 font-semibold flex items-center justify-center gap-2 my-6 hover:opacity-70 transition ease-linear"
         >
